@@ -1,0 +1,599 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="njord_usv">
+    <link name="base_link">
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>17</mass>
+        <inertia>
+          <ixx>1.256398</ixx>
+          <ixy>-0.004728</ixy>
+          <ixz>-0.028444</ixz>
+          <iyy>1.475879</iyy>
+          <iyz>-0.001714</iyz>
+          <izz>2.65594</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <pose>0.045206 0.000013 0.019826 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/base_link_visual.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <pose>0.045208 0.000011 0.019826 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/base_link_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+    
+    <link name="electronics_box_link">
+      <pose>-0.121332 0.001791 0.145235 0 0 0</pose>
+      <inertial>
+        <mass>2</mass>
+        <inertia>
+          <ixx>0.023267</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.023267</iyy>
+          <iyz>0</iyz>
+          <izz>0.0432</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.36 0.36 0.1</size>
+          </box>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.36 0.36 0.1</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="left_chasis_link">
+      <pose>-0.187331 0.42177 -0.136975 0 0 0</pose>
+      <inertial>
+        <mass>0.6</mass>
+        <inertia>
+          <ixx>0.001182</ixx>
+          <ixy>0</ixy>
+          <ixz>0.000004</ixz>
+          <iyy>0.0011</iyy>
+          <iyz>0.000002</iyz>
+          <izz>0.001073</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <pose>-0.011552 -0.001199 -0.005078 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/left_chasis_link_visual.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <pose>-0.011552 -0.001199 -0.005078 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/left_chasis_link_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="left_propeller_link">
+      <pose>-0.187331 0.42177 -0.136975 0 0 0</pose>
+      <inertial>
+        <mass>0.13</mass>
+        <inertia>
+          <ixx>0.000112</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.000074</iyy>
+          <iyz>0</iyz>
+          <izz>0.000074</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <pose>-0.002943 -0.008474 -0.003957 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/left_propeller_link_visual.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <pose>-0.002944 -0.008474 -0.003957 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/left_propeller_link_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Barometer - For PX4 SITL Preflight Check Fix -->
+
+    <link name="barometer_link">
+      <pose>0 0 0 0 0 0</pose>
+
+      <sensor name="air_pressure_sensor" type="air_pressure">
+        <gz_frame_id>barometer_link</gz_frame_id>
+				<always_on>1</always_on>
+				<update_rate>50</update_rate>
+				<air_pressure>
+					<pressure>
+						<noise type="gaussian">
+							<mean>0</mean>
+							<stddev>0.01</stddev>
+						</noise>
+					</pressure>
+				</air_pressure>
+			</sensor>
+    </link>
+
+    <joint name="barometer_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>barometer_link</child>
+    </joint>
+
+    <link name="lidar_camera_mount_link">
+      <pose>0.279247 -0.011004 0.202049 0 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.000567</ixx>
+          <ixy>0</ixy>
+          <ixz>-0.000065</ixz>
+          <iyy>0.000601</iyy>
+          <iyz>0.000001</iyz>
+          <izz>0.00012</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <pose>-0.009476 0.003052 0.034499 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/lidar_camera_mount_link_visual.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <pose>-0.009476 0.003052 0.034499 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/lidar_camera_mount_link_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="lidar_link">
+      <pose>0.293147 -0.006652 0.3 3.14159 0 0</pose>
+      <inertial>
+        <mass>0.265</mass>
+        <inertia>
+          <ixx>0.000123</ixx>
+          <ixy>0</ixy>
+          <ixz>0.000001</ixz>
+          <iyy>0.000133</iyy>
+          <iyz>0</iyz>
+          <izz>0.00015</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <pose>0.005373 0.000172 -0.014212 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/lidar_link_visual.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <pose>0.005372 0.000172 -0.014212 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/lidar_link_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <sensor name="livox_lidar" type="gpu_lidar">
+        <gz_frame_id>lidar_link</gz_frame_id>
+        <always_on>true</always_on>
+        <update_rate>10</update_rate>
+        <visualize>false</visualize>
+        <pose>0 0 -0.02 0 0 0</pose>
+        <ray>
+          <visibility_mask>4294967293</visibility_mask>
+          <scan>
+            <horizontal>
+              <samples>1080</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.141593</min_angle>
+              <max_angle>3.141593</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>16</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.08727</min_angle>
+              <max_angle>0.08727</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>40</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+      </sensor>
+    </link>
+    <link name="right_chasis_link">
+      <pose>-0.187331 -0.418227 -0.136975 0 0 0</pose>
+      <inertial>
+        <mass>0.6</mass>
+        <inertia>
+          <ixx>0.001181</ixx>
+          <ixy>0</ixy>
+          <ixz>0.000005</ixz>
+          <iyy>0.0011</iyy>
+          <iyz>0</iyz>
+          <izz>0.001074</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <pose>-0.01155 -0.001195 -0.005076 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/right_chasis_link_visual.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <pose>-0.01155 -0.001195 -0.005076 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/right_chasis_link_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="right_propeller_link">
+      <pose>-0.187331 -0.418227 -0.136975 0 0 0</pose>
+      <inertial>
+        <mass>0.13</mass>
+        <inertia>
+          <ixx>0.000112</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.000074</iyy>
+          <iyz>0</iyz>
+          <izz>0.000074</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <pose>0.002943 0.003983 0.008494 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/right_propeller_link_visual.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <pose>0.002943 0.003983 0.008494 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/right_propeller_link_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="zed_camera_link">
+      <pose>0.345378 0.02 0.2 0 0 0</pose>
+      <inertial>
+        <mass>0.24</mass>
+        <inertia>
+          <ixx>0.000056</ixx>
+          <ixy>0</ixy>
+          <ixz>0.000002</ixz>
+          <iyy>0.000503</iyy>
+          <iyz>0</iyz>
+          <izz>0.000517</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <pose>0.004301 0.001346 0.001671 0 0 -1.570796</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/zed_camera_link_visual.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <pose>0.004301 0.001343 0.001671 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/njord_usv/meshes/zed_camera_link_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <sensor name="zed_camera" type="camera">
+        <gz_frame_id>zed_camera_link_optical</gz_frame_id>
+        <always_on>true</always_on>
+        <update_rate>10</update_rate>
+        <visualize>false</visualize>
+        <pose relative_to="zed_camera_link">0.04 0 0 0 0 0</pose>
+        <camera>
+          <horizontal_fov>1.919862</horizontal_fov>
+          <image>
+            <width>960</width>
+            <height>600</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.02</near>
+            <far>300</far>
+          </clip>
+        </camera>
+      </sensor>
+      <sensor name="zed_depth_camera" type="depth_camera">
+        <gz_frame_id>zed_camera_link_optical</gz_frame_id>
+        <always_on>true</always_on>
+        <update_rate>10</update_rate>
+        <visualize>false</visualize>
+        <pose relative_to="zed_camera_link">0.04 0 0 0 0 0</pose>
+        <camera>
+          <horizontal_fov>1.919862</horizontal_fov>
+          <image>
+            <width>960</width>
+            <height>600</height>
+            <format>R_FLOAT32</format>
+          </image>
+          <clip>
+            <near>0.5</near>
+            <far>20</far>
+          </clip>
+        </camera>
+        <depth_camera>
+          <output>
+            <type>depth</type>
+          </output>
+        </depth_camera>
+      </sensor>
+    </link>
+
+    <link name="zed_camera_link_optical">
+    </link>
+
+    <link name="navsat_link">
+      <pose>0.0 0.0 0.1 0 0 0</pose>
+      <sensor name="navsat_sensor" type="navsat">
+        <gz_frame_id>navsat_link</gz_frame_id>
+        <pose>0.0 0.0 0.05 0 0 0</pose>
+        <always_on>1</always_on>
+        <update_rate>30</update_rate>
+      </sensor>
+    </link>
+
+    <link name="imu_link">
+      <pose>0.0 0.0 0.1 0 0 0</pose>
+      <sensor name="imu_sensor" type="imu">
+        <gz_frame_id>imu_link</gz_frame_id>
+        <always_on>1</always_on>
+        <update_rate>250</update_rate>
+        <imu>
+          <angular_velocity>
+            <x>
+              <noise type="gaussian">
+                <mean>0</mean>
+                <stddev>0.0003394</stddev>
+                <dynamic_bias_stddev>3.8785e-05</dynamic_bias_stddev>
+                <dynamic_bias_correlation_time>1000</dynamic_bias_correlation_time>
+              </noise>
+            </x>
+            <y>
+              <noise type="gaussian">
+                <mean>0</mean>
+                <stddev>0.0003394</stddev>
+                <dynamic_bias_stddev>3.8785e-05</dynamic_bias_stddev>
+                <dynamic_bias_correlation_time>1000</dynamic_bias_correlation_time>
+              </noise>
+            </y>
+            <z>
+              <noise type="gaussian">
+                <mean>0</mean>
+                <stddev>0.0003394</stddev>
+                <dynamic_bias_stddev>3.8785e-05</dynamic_bias_stddev>
+                <dynamic_bias_correlation_time>1000</dynamic_bias_correlation_time>
+              </noise>
+            </z>
+          </angular_velocity>
+          <linear_acceleration>
+            <x>
+              <noise type="gaussian">
+                <mean>0</mean>
+                <stddev>0.004</stddev>
+                <dynamic_bias_stddev>0.006</dynamic_bias_stddev>
+                <dynamic_bias_correlation_time>300</dynamic_bias_correlation_time>
+              </noise>
+            </x>
+            <y>
+              <noise type="gaussian">
+                <mean>0</mean>
+                <stddev>0.004</stddev>
+                <dynamic_bias_stddev>0.006</dynamic_bias_stddev>
+                <dynamic_bias_correlation_time>300</dynamic_bias_correlation_time>
+              </noise>
+            </y>
+            <z>
+              <noise type="gaussian">
+                <mean>0</mean>
+                <stddev>0.004</stddev>
+                <dynamic_bias_stddev>0.006</dynamic_bias_stddev>
+                <dynamic_bias_correlation_time>300</dynamic_bias_correlation_time>
+              </noise>
+            </z>
+          </linear_acceleration>
+        </imu>
+      </sensor>
+    </link>
+
+
+    <joint name="electronics_box_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>electronics_box_link</child>
+    </joint>
+    <joint name="left_chasis_engine_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>left_chasis_link</child>
+    </joint>
+    <joint name="left_engine_propeller_joint" type="revolute">
+      <parent>left_chasis_link</parent>
+      <child>left_propeller_link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-inf</lower>
+          <upper>inf</upper>
+          <effort>100</effort>
+          <velocity>100</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.05</damping>
+          <friction>0.05</friction>
+        </dynamics>
+      </axis>
+    </joint>
+    <joint name="lidar_camera_mount_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>lidar_camera_mount_link</child>
+    </joint>
+    <joint name="lidar_link_joint" type="fixed">
+      <parent>lidar_camera_mount_link</parent>
+      <child>lidar_link</child>
+    </joint>
+    <joint name="right_chasis_link_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>right_chasis_link</child>
+    </joint>
+    <joint name="right_engine_propeller_joint" type="revolute">
+      <parent>right_chasis_link</parent>
+      <child>right_propeller_link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-inf</lower>
+          <upper>inf</upper>
+          <effort>100</effort>
+          <velocity>100</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.05</damping>
+          <friction>0.05</friction>
+        </dynamics>
+      </axis>
+    </joint>
+    <joint name="zed_camera_link_joint" type="fixed">
+      <parent>lidar_camera_mount_link</parent>
+      <child>zed_camera_link</child>
+    </joint>
+    <joint name="zed_camera_link_optical_joint" type="fixed">
+      <pose>0.345378 0.02 0.2 -1.570796 0 -1.570796</pose>
+      <parent>zed_camera_link</parent>
+      <child>zed_camera_link_optical</child>
+    </joint>
+    <joint name="navsat_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>navsat_link</child>
+    </joint>
+    <joint name="imu_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>imu_link</child>
+    </joint>
+    <plugin filename="libSurface.so" name="vrx::Surface">
+      <link_name>base_link</link_name>
+      <hull_length>1.19</hull_length>
+      <hull_radius>0.105</hull_radius>
+      <fluid_level>0.10</fluid_level>
+      <points>
+        <point>0.34 0.42 0.0</point>
+        <point>-0.34 0.42 0.0</point>
+      </points>
+      <wavefield>
+        <topic>/vrx/wavefield/parameters</topic>
+      </wavefield>
+    </plugin>
+    <plugin filename="libSurface.so" name="vrx::Surface">
+      <link_name>base_link</link_name>
+      <hull_length>1.19</hull_length>
+      <hull_radius>0.105</hull_radius>
+      <fluid_level>0.10</fluid_level>
+      <points>
+        <point>0.34 -0.42 0.0</point>
+        <point>-0.34 -0.42 0.0</point>
+      </points>
+      <wavefield>
+        <topic>/vrx/wavefield/parameters</topic>
+      </wavefield>
+    </plugin>
+
+    <plugin
+      filename="libSimpleHydrodynamics.so"
+      name="vrx::SimpleHydrodynamics">
+      <link_name>base_link</link_name>
+      <!-- Added mass -->
+      <xDotU>6.5</xDotU>
+      <yDotV>10.0</yDotV>
+      <nDotR>1.5</nDotR>
+
+      <!-- Linear and quadratic drag -->
+      <xU>22.0</xU>
+      <xUU>34.0</xUU>
+      <yV>30.0</yV>
+      <yVV>48.0</yVV>
+      <zW>36.0</zW>
+      <kP>18.0</kP>
+      <kPP>34.0</kPP>
+      <mQ>46.0</mQ>
+      <mQQ>58.0</mQQ>
+      <nR>48.0</nR>
+      <nRR>56.0</nRR>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-thruster-system"
+      name="gz::sim::systems::Thruster">
+      <joint_name>left_engine_propeller_joint</joint_name>
+      <fluid_density>1000</fluid_density>
+      <propeller_diameter>0.1145</propeller_diameter>
+      <velocity_control>false</velocity_control>
+      <thrust_coefficient>0.0045</thrust_coefficient>
+      <max_thrust_cmd>158</max_thrust_cmd>
+      <min_thrust_cmd>-103</min_thrust_cmd>
+    </plugin>
+
+    <plugin
+      filename="gz-sim-thruster-system"
+      name="gz::sim::systems::Thruster">
+      <joint_name>right_engine_propeller_joint</joint_name>
+      <fluid_density>1000</fluid_density>
+      <propeller_diameter>0.1145</propeller_diameter>
+      <velocity_control>false</velocity_control>
+      <thrust_coefficient>-0.0045</thrust_coefficient>
+      <max_thrust_cmd>158</max_thrust_cmd>
+      <min_thrust_cmd>-103</min_thrust_cmd>
+    </plugin>
+  </model>
+</sdf>

@@ -1,0 +1,374 @@
+lifecycle_manager_navigation:
+  ros__parameters:
+    use_sim_time: True
+    autostart: True
+    node_names: ['controller_server',
+                 'smoother_server',
+                 'planner_server',
+                 'behavior_server',
+                 'bt_navigator',
+                 'waypoint_follower',
+                 'velocity_smoother',
+                 'collision_monitor']
+
+controller_server:
+  ros__parameters:
+    controller_frequency: 20.0
+    goal_checker_plugins: ["general_goal_checker"]
+    controller_plugins: ["FollowPath"]
+
+    general_goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 2.0
+      yaw_goal_tolerance: 6.28
+      stateful: True
+    
+    FollowPath:
+      #plugin: "nav2_rotation_shim_controller::RotationShimController"
+      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+
+      # RotationShimController settings
+      # angular_dist_threshold: 0.349066
+      # forward_sampling_distance: 1.0
+      # angular_disengage_threshold: 0.174533
+      # rotate_to_heading_angular_vel: 1.0
+      # max_angular_accel: 1.2
+      # simulate_ahead_time: 2.0
+      # rotate_to_goal_heading: false
+
+      # RegulatedPurePursuitController settings
+      desired_linear_vel: 1.0
+      lookahead_dist: 3.0
+
+      use_velocity_scaled_lookahead_dist: false
+      min_lookahead_dist: 2.5
+      max_lookahead_dist: 8.0
+      lookahead_time: 2.0
+
+      # Use this or RotationShimController
+      use_rotate_to_heading: false
+      rotate_to_heading_min_angle: 0.785
+      rotate_to_heading_angular_vel: 1.0
+      max_angular_accel: 1.2
+
+      transform_tolerance: 0.3
+      min_approach_linear_velocity: 0.2
+      approach_velocity_scaling_dist: 0.0 # The distance (m) left on the path at which to start slowing down
+
+      use_collision_detection: false
+      max_allowed_time_to_collision_up_to_carrot: 2.0 # use_collision_detection must be true
+
+      use_cost_regulated_linear_velocity_scaling: false # Whether to use the regulated features for proximity to obstacles
+      cost_scaling_dist: 5.0 # The minimum distance from an obstacle to trigger the scaling of linear velocity, if use_cost_regulated_linear_velocity_scaling is enabled. The value set should be smaller or equal to the inflation_radius set in the inflation layer of costmap, since inflation is used to compute the distance from obstacles.
+      cost_scaling_gain: 0.7 # A multiplier gain, which should be <= 1.0, used to further scale the speed when an obstacle is within cost_scaling_dist. Lower value reduces speed more quickly.
+
+      use_regulated_linear_velocity_scaling: false # Whether to use the regulated features for curvature
+      regulated_linear_scaling_min_radius: 3.0 # use_regulated_linear_velocity_scaling must be true
+      regulated_linear_scaling_min_speed: 0.3
+
+      use_fixed_curvature_lookahead: false
+      curvature_lookahead_dist: 5.0
+
+      allow_reversing: false
+
+# Rolling local costmap: STVL replaces nav2_costmap_2d::VoxelLayer.
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 10.0
+      publish_frequency: 10.0
+      global_frame: odom
+      robot_base_frame: base_link
+      use_sim_time: True
+      unknown_is_lethal: false
+      rolling_window: true
+      width: 35
+      height: 35
+      track_unknown_space: false
+      resolution: 0.1
+      robot_radius: 0.8
+      plugins: ["stvl_layer", "inflation_layer"]
+
+      stvl_layer:
+        plugin: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"
+        enabled: true
+        voxel_decay: 0.5
+        decay_model: 0
+        voxel_size: 0.10
+        track_unknown_space: false
+        unknown_threshold: 15
+        mark_threshold: 0
+        update_footprint_enabled: true
+        combination_method: 1
+        origin_z: 0.0
+        publish_voxel_map: false
+        transform_tolerance: 0.3
+        mapping_mode: false
+        map_save_duration: 60.0
+        observation_sources: livox_mark livox_clear
+
+        livox_mark:
+          enabled: true
+          data_type: "PointCloud2"
+          topic: "/sensors/livox_lidar/scan"
+          marking: true
+          clearing: false
+          min_obstacle_height: -0.5
+          max_obstacle_height: 3.0
+          obstacle_range: 40.0
+          expected_update_rate: 0.0
+          observation_persistence: 0.0
+          clear_after_reading: true
+          filter: "voxel"
+          voxel_min_points: 0
+
+        livox_clear:
+          enabled: true
+          data_type: "PointCloud2"
+          topic: "/sensors/livox_lidar/scan"
+          marking: false
+          clearing: true
+          min_z: -0.5
+          max_z: 3.0
+          clear_after_reading: true
+          vertical_fov_angle: 0.5236
+          horizontal_fov_angle: 6.2832
+          decay_acceleration: 30.0
+          model_type: 1
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 1.2
+
+      always_send_full_costmap: True
+      transform_tolerance: 0.3
+
+# Rolling global costmap: STVL replaces nav2_costmap_2d::ObstacleLayer.
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 10.0
+      publish_frequency: 10.0
+      global_frame: map
+      robot_base_frame: base_link
+      use_sim_time: True
+      unknown_is_lethal: false
+      robot_radius: 0.8
+      resolution: 0.2
+      rolling_window: true
+      width: 100
+      height: 100
+      track_unknown_space: false
+      plugins: ["stvl_layer", "inflation_layer"]
+
+      stvl_layer:
+        plugin: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"
+        enabled: true
+        voxel_decay: 0.2
+        decay_model: 0
+        voxel_size: 0.20
+        track_unknown_space: false
+        unknown_threshold: 15
+        mark_threshold: 0
+        update_footprint_enabled: true
+        combination_method: 1
+        origin_z: 0.0
+        publish_voxel_map: false
+        transform_tolerance: 0.3
+        mapping_mode: false
+        map_save_duration: 60.0
+        observation_sources: livox_mark livox_clear
+
+        livox_mark:
+          enabled: true
+          data_type: "PointCloud2"
+          topic: "/sensors/livox_lidar/scan"
+          marking: true
+          clearing: false
+          min_obstacle_height: -0.5
+          max_obstacle_height: 3.0
+          obstacle_range: 40.0
+          expected_update_rate: 0.0
+          observation_persistence: 0.0
+          clear_after_reading: true
+          filter: "voxel"
+          voxel_min_points: 0
+
+        livox_clear:
+          enabled: true
+          data_type: "PointCloud2"
+          topic: "/sensors/livox_lidar/scan"
+          marking: false
+          clearing: true
+          min_z: -0.5
+          max_z: 3.0
+          clear_after_reading: true
+          vertical_fov_angle: 0.18
+          horizontal_fov_angle: 6.2832
+          decay_acceleration: 5.0
+          model_type: 1
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 1.2
+      always_send_full_costmap: True
+      transform_tolerance: 0.3
+
+# The yaml_filename does not need to be specified since it going to be set by defaults in launch.
+# If you'd rather set it in the yaml, remove the default "map" value in the tb3_simulation_launch.py
+# file & provide full path to map below. If CLI map configuration or launch default is provided, that will be used.
+# map_server:
+#   ros__parameters:
+#     use_sim_time: True
+#     yaml_filename: "glob_map.yaml"
+
+# map_saver:
+#   ros__parameters:
+#     save_map_timeout: 5.0
+#     free_thresh_default: 0.25
+#     occupied_thresh_default: 0.65
+#     map_subscribe_transient_local: True
+#     service_introspection_mode: "disabled"
+
+planner_server:
+  ros__parameters:
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_theta_star_planner::ThetaStarPlanner"
+      tolerance: 0.125
+      allow_unknown: true
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 1.5            # Slightly faster than A*
+
+      smoother:
+        max_iterations: 200             # Minimal smoothing (Theta* already produces direct paths)
+        w_smooth: 0.08                  # Lower = preserve direct path
+        w_data: 0.52                    # Higher = stay closer to original
+        tolerance: 1.0e-8
+
+smoother_server:
+  ros__parameters:
+    smoother_plugins: ["simple_smoother"]
+    simple_smoother:
+      plugin: "nav2_smoother::SimpleSmoother"
+      tolerance: 1.0e-10
+      max_its: 1000
+      do_refinement: True
+      refinement_num: 2
+      enforce_path_inversion: False
+      w_data: 0.2
+      w_smooth: 0.3
+
+# behavior_server:
+#   ros__parameters:
+#     local_costmap_topic: local_costmap/costmap_raw # Raw costmap topic for collision checking on the local costmap.
+#     global_costmap_topic: global_costmap/costmap_raw # Raw costmap topic for collision checking on the global costmap.
+#     local_footprint_topic: local_costmap/published_footprint
+#     global_footprint_topic: global_costmap/published_footprint
+#     cycle_frequency: 10.0
+#     behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
+#     spin:
+#       plugin: "nav2_behaviors/Spin"
+#     backup:
+#       plugin: "nav2_behaviors/BackUp"
+#     drive_on_heading:
+#       plugin: "nav2_behaviors/DriveOnHeading"
+#     wait:
+#       plugin: "nav2_behaviors/Wait"
+#     assisted_teleop:
+#       plugin: "nav2_behaviors/AssistedTeleop"
+#     local_frame: odom
+#     global_frame: map
+#     robot_base_frame: base_link
+#     transform_tolerance: 0.1
+#     simulate_ahead_time: 2.0
+#     max_rotational_vel: 1.0
+#     min_rotational_vel: 0.4
+#     rotational_acc_lim: 3.2
+
+waypoint_follower:
+  ros__parameters:
+    loop_rate: 20
+    stop_on_failure: true
+    waypoint_task_executor_plugin: "wait_at_waypoint"
+    wait_at_waypoint:
+      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+      enabled: True
+      waypoint_pause_duration: 0
+
+velocity_smoother:
+  ros__parameters:
+    smoothing_frequency: 20.0
+    scale_velocities: true
+    feedback: "OPEN_LOOP"
+    max_velocity: [1.0, 0.0, 1.6]
+    min_velocity: [-1.2, 0.0, -1.6]
+    max_accel: [6.0, 0.0, 1.2]
+    max_decel: [-3.0, 0.0, -1.2]
+    odom_topic: "/odom"
+    odom_duration: 0.1
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 1.0
+
+collision_monitor:
+  ros__parameters:
+    use_sim_time: True
+    base_frame_id: "base_link"
+    odom_frame_id: "odom"
+    cmd_vel_in_topic: "cmd_vel_smoothed"
+    cmd_vel_out_topic: "cmd_vel"
+    transform_tolerance: 0.1
+    source_timeout: 5.0
+    base_shift_correction: True
+    stop_pub_timeout: 2.0
+    polygons: ["PolygonStop", "PolygonSlow"]
+
+    PolygonStop:
+      type: "polygon"
+      points: "[[1.0, 0.5], [1.0, -0.5], [-0.5, -0.5], [-0.5, 0.5]]"
+      action_type: "stop"
+      min_points: 4
+      visualize: True
+      polygon_pub_topic: "polygon_stop"
+
+    PolygonSlow:
+      type: "polygon"
+      points: "[[2.0, 1.5], [2.0, -1.5], [-1.0, -1.5], [-1.0, 1.5]]"
+      action_type: "slowdown"
+      min_points: 3
+      slowdown_ratio: 0.5
+      visualize: True
+      polygon_pub_topic: "polygon_slow"
+
+    observation_sources: ["scan"]
+    scan:
+      type: "pointcloud"
+      topic: "/sensors/livox_lidar/scan"
+      enabled: True
+
+docking_server:
+  ros__parameters:
+    controller_frequency: 50.0
+    initial_perception_timeout: 5.0
+    wait_charge_timeout: 5.0
+    dock_approach_timeout: 30.0
+    undock_linear_tolerance: 0.05
+    undock_angular_tolerance: 0.1
+    max_retries: 3
+    base_frame: "base_link"
+    fixed_frame: "odom"
+    dock_backwards: false
+    dock_prestaging_tolerance: 0.5
+
+    # Minimal dock plugins to prevent error
+    dock_plugins: ['simple_charging_dock']
+    simple_charging_dock:
+      plugin: 'opennav_docking::SimpleChargingDock'
+      docking_threshold: 0.05
+      staging_x_offset: -0.7
+      use_external_detection_pose: false
+      use_battery_status: false

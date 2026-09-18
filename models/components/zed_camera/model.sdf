@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="rgbd_camera">
+    <link name="link">
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 -0.01 0.0245 0 0 0</pose>
+        <mass>0.3</mass>
+        <inertia>
+          <ixx>0.000150025</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00074065</iyy>
+          <iyz>0</iyz>
+          <izz>0.0007706249999999999</izz>
+        </inertia>
+      </inertial>
+      <collision name="collision_top">
+        <pose>0 -0.02 0.034 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.165 0.040 0.030 0 0 0</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="collision_base">
+        <pose>0 -0.010 0.00725 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 0.060 0.015 0 0 0</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://rgbd_camera/meshes/3dCamera.DAE</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>

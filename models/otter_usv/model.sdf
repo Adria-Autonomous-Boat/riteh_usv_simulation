@@ -1,0 +1,141 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <model name="otter_usv">
+
+    <link name="base_link">
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>29</mass>
+        <pose>0 0 0.29 0 0 0</pose>
+        <inertia>
+          <ixx>10</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>10</iyy><iyz>0</iyz>
+          <izz>10</izz>
+        </inertia>
+      </inertial>
+
+      <visual name="visual">
+        <pose>0 0 0.6 0 0 -1.5708</pose>
+        <geometry>
+          <mesh>
+            <uri>package://usv/models/otter_usv/meshes/otter/otter.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="collision">
+        <pose>-0.3 0 0.10 -1.5708 0 1.5708</pose>
+        <geometry>
+          <box><size>1.0 0.3 1.7</size></box>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="left_propeller_link">
+      <pose>-0.89 0.395 -0.07 0 0 0</pose>
+      <inertial>
+        <mass>0.5</mass>
+        <inertia>
+          <ixx>0.008545</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.008545</iyy><iyz>0</iyz>
+          <izz>0.0144</izz>
+        </inertia>
+      </inertial>
+    </link>
+
+    <link name="right_propeller_link">
+      <pose>-0.88 -0.395 -0.07 0 0 0</pose>
+      <inertial>
+        <mass>0.5</mass>
+        <inertia>
+          <ixx>0.008545</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.008545</iyy><iyz>0</iyz>
+          <izz>0.0144</izz>
+        </inertia>
+      </inertial>
+    </link>
+
+    <joint name="left_engine_propeller_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>left_propeller_link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit><effort>100</effort><velocity>100</velocity></limit>
+        <dynamics><friction>0.05</friction><damping>0.05</damping></dynamics>
+      </axis>
+    </joint>
+
+    <joint name="right_engine_propeller_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>right_propeller_link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit><effort>100</effort><velocity>100</velocity></limit>
+        <dynamics><friction>0.05</friction><damping>0.05</damping></dynamics>
+      </axis>
+    </joint>
+
+    <plugin filename="libSurface.so" name="vrx::Surface">
+      <link_name>base_link</link_name>
+      <hull_length>1.7</hull_length>
+      <hull_radius>0.15</hull_radius>
+      <fluid_level>0.10</fluid_level>
+      <points>
+        <point>0.5 0.395 0.0</point>
+        <point>-0.5 0.395 0.0</point>
+      </points>
+      <wavefield><topic>/vrx/wavefield/parameters</topic></wavefield>
+    </plugin>
+
+    <plugin filename="libSurface.so" name="vrx::Surface">
+      <link_name>base_link</link_name>
+      <hull_length>1.7</hull_length>
+      <hull_radius>0.15</hull_radius>
+      <fluid_level>0.10</fluid_level>
+      <points>
+        <point>0.5 -0.395 0.0</point>
+        <point>-0.5 -0.395 0.0</point>
+      </points>
+      <wavefield><topic>/vrx/wavefield/parameters</topic></wavefield>
+    </plugin>
+
+    <plugin filename="libSimpleHydrodynamics.so" name="vrx::SimpleHydrodynamics">
+      <link_name>base_link</link_name>
+      <xDotU>6.5</xDotU><yDotV>10.0</yDotV><nDotR>1.5</nDotR>
+      <xU>22.0</xU><xUU>34.0</xUU>
+      <yV>30.0</yV><yVV>48.0</yVV>
+      <zW>36.0</zW>
+      <kP>18.0</kP><kPP>34.0</kPP>
+      <mQ>46.0</mQ><mQQ>58.0</mQQ>
+      <nR>48.0</nR><nRR>56.0</nRR>
+    </plugin>
+
+    <plugin filename="gz-sim-thruster-system" name="gz::sim::systems::Thruster">
+      <joint_name>left_engine_propeller_joint</joint_name>
+      <fluid_density>1000</fluid_density>
+      <propeller_diameter>0.24</propeller_diameter>
+      <velocity_control>false</velocity_control>
+      <thrust_coefficient>0.0045</thrust_coefficient>
+      <max_thrust_cmd>158</max_thrust_cmd>
+      <min_thrust_cmd>-103</min_thrust_cmd>
+    </plugin>
+
+    <plugin filename="gz-sim-thruster-system" name="gz::sim::systems::Thruster">
+      <joint_name>right_engine_propeller_joint</joint_name>
+      <fluid_density>1000</fluid_density>
+      <propeller_diameter>0.24</propeller_diameter>
+      <velocity_control>false</velocity_control>
+      <thrust_coefficient>-0.0045</thrust_coefficient>
+      <max_thrust_cmd>158</max_thrust_cmd>
+      <min_thrust_cmd>-103</min_thrust_cmd>
+    </plugin>
+
+    <plugin filename="gz-sim-odometry-publisher-system"
+            name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>odom</odom_frame>
+      <robot_base_frame>otter_usv_0</robot_base_frame>
+      <odom_publish_frequency>10</odom_publish_frequency>
+    </plugin>
+
+  </model>
+</sdf>

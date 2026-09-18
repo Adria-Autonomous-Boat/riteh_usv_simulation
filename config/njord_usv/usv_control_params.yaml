@@ -1,0 +1,53 @@
+differential_guidance:
+  ros__parameters:
+    engine_separation_width: 0.84    # Separation width between two thrusters
+    max_forward_speed: 2.8    # Maximum allowed vessel velocity
+    max_reversing_speed: 2.2    # Maximum reversing vessel velocity
+    max_yaw_rate: 1.0   # Maximum allowed vessel yaw rate
+    final_speed_from_distance: 2.0 # Speed of vessel when braking distance is reached
+
+    turn_max_velocity: 2.2    # Velocity threshold for starting the spot turn [m/s]
+    yaw_rate_threshold: 0.02    # [rad/s] The minimum threshold for the yaw rate measurement not to be interpreted as zero
+    speed_threshold: 0.1    # [m/s] The minimum threshold for the speed measurement not to be interpreted as zero
+
+    param_rd_max_thr_spd: 2.8   # Max speed at maximum throttle
+    param_rd_max_thr_yaw_r: 1.0   # Max yaw rate when left/right thrusters run at max speed in opposite directions
+    param_rdd_max_jerk: 1.0   # Limit for forwards acc/deceleration change (m/s^3).
+    param_rdd_max_accel: 1.0  # Maximum vessel acceleration
+
+    param_rd_trans_drv_trn: 0.349066    # [rad] Heading error threshold to switch from driving to spot turning
+    param_rd_trans_trn_drv: 0.174533    # [rad] Heading error threshold to switch from spot turning to driving
+
+    # Yaw rate PID parameters
+    param_rd_yaw_rate_p: 0.6
+    param_rd_yaw_rate_i: 0.0
+
+    # Linear velocity PID parameters
+    param_rd_p_gain_speed: 0.5
+    param_rd_i_gain_speed: 0.1
+
+    # Yaw PID parameters
+    param_rd_p_gain_yaw: 5.0
+    param_rd_i_gain_yaw: 0.0
+
+
+    param_nav_acc_rad: 2.0   # Radius in meters around a waypoint when it is considered reached
+
+differential_drive_kinematics:
+  ros__parameters:
+    engine_separation_width: 0.84    # Separation width between two thrusters
+    max_forward_speed: 2.8    # Maximum allowed vessel velocity
+    max_reversing_speed: 2.2    # Maximum reversing vessel velocity
+    max_yaw_rate: 1.7   # Maximum allowed vessel yaw rate
+
+engines_controller_sim:
+  ros__parameters:
+
+    # Motor ESC Settings
+    neutral: 700
+    forward_multiplier: 600
+    reverse_multiplier: 200
+
+    # GZ Thruster Settings
+    gz_thruster_max_force: 158 # Newtons
+    gz_thruster_min_force: 103 # Newtons

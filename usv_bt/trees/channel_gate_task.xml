@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4" main_tree_to_execute="ChannelGateTask">
+
+  <BehaviorTree ID="ChannelGateTask">
+    <Sequence name="main">
+
+      <RetryUntilSuccessful num_attempts="-1" name="WaitForAnchor">
+        <GpsAnchorReady/>
+      </RetryUntilSuccessful>
+
+      <!--
+        Outer loop: keep trying until NavigateChannel succeeds.
+        Each iteration: check for vessel → if clear, navigate; if vessel, avoid then wait clear.
+      -->
+      <RetryUntilSuccessful num_attempts="-1" name="NavLoop">
+        <ReactiveSequence name="NavOrAvoid">
+
+          <!-- If vessel is in range, go to avoidance -->
+          <Fallback name="CheckVessel">
+            <Inverter name="NoVesselClose">
+              <VesselInRange range_threshold="20.0" min_speed="0.3"/>
+            </Inverter>
+            <!-- Vessel detected: avoid to starboard, then wait until clear -->
+            <Sequence name="ColregSequence">
+              <ColregAvoid starboard_offset="6.0" yield_offset="7.0" yield_clearance="3.0" replan_interval_s="1.0" emergency_range="12.0" arc_radius="2.75"/>
+              <RetryUntilSuccessful num_attempts="-1" name="WaitForClear">
+                <VesselClear clear_range="15.0"/>
+              </RetryUntilSuccessful>
+              <Delay delay_msec="15000">
+                <AlwaysSuccess/>
+              </Delay>
+            </Sequence>
+          </Fallback>
+
+          <!-- No vessel (or just cleared): navigate to GPS-6 -->
+          <NavigateChannel
+            name="NavigateToGPS6"
+            goal_lat="-33.722088"
+            goal_lon="150.674820"/>
+
+        </ReactiveSequence>
+      </RetryUntilSuccessful>
+
+    </Sequence>
+  </BehaviorTree>
+
+</root>
