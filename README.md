@@ -27,6 +27,8 @@ for on-water validation.
 - [COLREG collision avoidance](#colreg-collision-avoidance)
   - [Background: Njord Autonomous Ship Challenge](#background-njord-autonomous-ship-challenge)
   - [Running the COLREG task](#running-the-colreg-task)
+    - [Launch arguments](#launch-arguments)
+    - [Otter starting position and launch timing](#otter-starting-position-and-launch-timing)
   - [The behavior tree](#the-behavior-tree)
   - [Reusing the behavior tree in another project](#reusing-the-behavior-tree-in-another-project)
   - [Vessel detection (LiDAR only)](#vessel-detection-lidar-only)
@@ -301,7 +303,9 @@ detector, and the behavior tree, exists to reproduce those two encounters repeat
 
 ### Running the COLREG task
 
-The COLREG stack runs on top of the normal simulation, in two terminals.
+The COLREG stack runs on top of the normal simulation, in three terminals. All three are required: Nav2 provides
+the `navigate_to_pose` action server that both the channel navigator and the COLREG avoidance node use to command
+the vessel, so without Terminal 2 the boat will not move at all.
 
 - **Terminal 1 — simulation.** Start the environment with the COLREG world (it is the default):
 
@@ -325,7 +329,7 @@ The COLREG stack runs on top of the normal simulation, in two terminals.
 
     This starts the vessel detector, the channel navigator, the behavior tree runner (delayed 5 s so the
     navigator can get a GPS fix), the Gazebo <==> ROS bridge for the Otter, and the Otter driving script (delayed
-    6.5 s).
+    4.5 s — see [Otter starting position and launch timing](#otter-starting-position-and-launch-timing)).
 
 - Alternatively, use the wrapper script, which does the same thing but tees all output to a timestamped log file
   under `logs/colreg_logs/`:
@@ -336,18 +340,76 @@ The COLREG stack runs on top of the normal simulation, in two terminals.
 
   Any launch arguments are passed straight through, e.g. `./scripts/colreg.sh goal_lat:=-33.722088 goal_lon:=150.674820`.
 
-Useful launch arguments for `colreg.launch.py`:
+#### Launch arguments
+
+All of these are passed to the `channel_navigator` node, so there is **no need to start it manually**,
+the defaults below already encode a working run:
 
 | Argument | Default | Meaning |
 | --- | --- | --- |
-| `goal_lat` / `goal_lon` | `nan` | Final goal in decimal degrees. If unset, the BT supplies the goal. |
-| `gate_commit_dist` | `35.0` | Distance (m) at which to commit to a detected gate. |
+| `goal_lat` | `-33.721814` | Final GPS goal latitude (decimal degrees). |
+| `goal_lon` | `150.674820` | Final GPS goal longitude (decimal degrees). |
+| `gate_commit_dist` | `20.0` | Distance (m) at which to commit to a detected gate. |
 | `buoy_react_dist` | `20.0` | Distance (m) at which to react to a single buoy. |
 | `max_buoy_depth` | `35.0` | Maximum depth (m) at which a buoy is still detected. |
+| `send_to_nav2` | `true` | Send `NavigateToPose` goals to Nav2. Set `false` to only publish goals for inspection (the boat will not move). |
 
-The Otter's starting pose and heading are set in `usv_sim.launch.py` (see the `spawn_otter` action). Several
-alternative spawn poses for different encounter geometries are kept as comments just above it — swap them in to
-switch between different scenarios.
+Examples:
+
+```bash
+# Default run — goal already set, nothing else needed
+ros2 launch riteh_usv_sim colreg.launch.py
+
+# Override the goal
+ros2 launch riteh_usv_sim colreg.launch.py goal_lat:=-33.722088 goal_lon:=150.674820
+
+# Let the behavior tree set the goal over the service instead of the launch file
+ros2 launch riteh_usv_sim colreg.launch.py goal_lat:=nan goal_lon:=nan
+
+# Dry run — see the goals being computed without commanding the vessel
+ros2 launch riteh_usv_sim colreg.launch.py send_to_nav2:=false
+```
+
+**Do not also run `channel_navigator.py` manually with `ros2 run`.** The launch file already starts it. A second
+instance takes the same node name (`/channel_navigator`), which ROS 2 does not prevent, and the resulting
+duplicate-name collision breaks service discovery — `/channel_nav/set_gps_goal` disappears, the behavior tree
+logs `set_gps_goal not available`, and the vessel never moves.
+
+**On the two goal sources.** If `goal_lat`/`goal_lon` are set, the navigator converts them to a map-frame goal as
+soon as the GPS anchor is established. The behavior tree *also* sets a goal via the `/channel_nav/set_gps_goal`
+service a few seconds later, using the coordinates hardcoded in `usv_bt/trees/channel_gate_task.xml`. Whichever
+arrives last wins, which in practice is the tree. Pass `goal_lat:=nan goal_lon:=nan` if you want the tree to be
+the single source of truth, or edit the XML to match your launch defaults.
+
+#### Otter starting position and launch timing
+
+The Otter's starting pose and heading are set in `usv_sim.launch.py` in the `spawn_otter` action. Our USV spawns
+at `-455, 172` heading `1.57` rad (due north, via `PX4_GZ_MODEL_POSE`), so every Otter pose is chosen relative to
+that. A catalogue of tested encounter geometries is kept as comments directly above `spawn_otter` — head-on,
+crossing from starboard, crossing from port, and several angled approaches that are expected to trigger the
+emergency arc. **Swap one in to change the scenario**; the currently active pose is the one inside the
+`arguments=[...]` list.
+
+**Changing the spawn position usually means changing the launch delay too.** Two timers govern the encounter:
+
+| Timer | Where | Default | Effect |
+| --- | --- | --- | --- |
+| `spawn_otter` period | `usv_sim.launch.py` | `15.0` s | When the Otter model appears in the world. |
+| `otter_forward` period | `colreg.launch.py` | `4.5` s | When the Otter starts driving forward. |
+
+Because `otter_forward.py` applies constant thrust in a straight line, the Otter's position at the moment of the
+encounter is a product of *where it spawned* and *how long it has been driving*. Move the spawn further away and
+the Otter arrives late — our USV may already have passed the crossing point, and no avoidance is triggered. Move
+it closer, or start it driving too early, and the Otter is already on top of us before the LiDAR has a usable
+detection, which forces the emergency arc instead of a clean COLREG manoeuvre.
+
+So when you change the spawn pose, retune the `otter_forward` delay in `colreg.launch.py` until the two vessels
+actually meet in the intended geometry. Expect a few iterations. Useful checks while tuning:
+
+- `vessel_detector` logs `[VESSEL] dist=… bearing=… extent=…` — the encounter should begin with the Otter at
+  roughly 30-40 m, comfortably inside `max_detect_range` (40 m).
+- `VesselInRange` fires at 20 m; if you never see it switch from `clear`, the vessels are not meeting.
+- If `ColregAvoid` reports the emergency range (12 m) straight away, the Otter started too early or too close.
 
 ### The behavior tree
 
@@ -444,9 +506,10 @@ constant thrust to both of the Otter's thrusters at 10 Hz:
 
 Equal thrust on both sides means the Otter holds a straight course, which is what the COLREG task assumes of the
 stand-on/approaching vessel. The direction of that transit is set by the Otter's spawn heading in
-`usv_sim.launch.py`. It is launched automatically by `colreg.launch.py` (6.5 s in, after the bridge is up), and
+`usv_sim.launch.py`. It is launched automatically by `colreg.launch.py` (4.5 s in, after the bridge is up), and
 its topics reach Gazebo through the `otter_bridge` parameter bridge configured in
-`usv_py/gz_utils/otter_bridge_config.py`.
+`usv_py/gz_utils/otter_bridge_config.py`. That delay is a tuning knob, not a constant — see
+[Otter starting position and launch timing](#otter-starting-position-and-launch-timing).
 
 To change the Otter's speed, edit the `THRUST` constant at the top of the script; the model's thrusters are
 limited to `max_thrust_cmd` 158 N / `min_thrust_cmd` -103 N in `models/otter_usv/model.sdf`.
